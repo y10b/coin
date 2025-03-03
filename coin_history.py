@@ -10,7 +10,7 @@ from sklearn.metrics import mean_squared_error
 from math import sqrt
 from prophet import Prophet
 
-""" 1단계: 업비트API로 가격 저장하기 """
+# 1단계: 업비트API로 가격 저장하기
 # 업비트 시세 조회 API URL (코인 가격 가져오기)
 url = "https://api.upbit.com/v1/candles/days"
 
@@ -51,7 +51,7 @@ if data:
 else:
     print("데이터를 가져오는 데 실패했습니다.")
 
-""" 2단계: CSV에서 데이터를 가져와서 시각화하기 """
+# 2단계: CSV에서 데이터를 가져와서 시각화하기
 
 # CSV 파일에서 코인 가격 데이터 불러오기
 df = pd.read_csv('upbit_bitcoin_prices.csv')
@@ -77,49 +77,4 @@ plt.legend()  # 범례 표시
 # 그래프 표시
 plt.show()
 
-""" 3단계: 가격 예측하기 """
-
-# 종가(Close) 가격 데이터만 추출
-data_close = df['Close']
-
-# 시계열 안정성 확인 (ADF Test)
-result = adfuller(data_close)
-print(f'ADF Statistic: {result[0]}')
-print(f'p-value: {result[1]}')
-
-# ADF p-value가 0.05보다 크다면, 차분(differencing)을 적용해야 함.
-# 여기서는 1차 차분을 수행
-data_diff = data_close.diff().dropna()
-
-# 안정성 확인
-result = adfuller(data_diff)
-print(f'ADF Statistic after differencing: {result[0]}')
-print(f'p-value after differencing: {result[1]}')
-
-# ACF, PACF 차트로 ARMA 모델의 파라미터(p, q) 찾기
-plot_acf(data_diff)
-plt.show()
-
-plot_pacf(data_diff)
-plt.show()
-
-# ARMA 모델 학습 (p, q 값을 직접 선택)
-model = ARIMA(data_close, order=(5, 0, 5))  # p=5, d=0, q=5 으로 ARMA 모델 설정
-model_fit = model.fit()
-
-# 예측하기 (200일 후 예측)
-forecast_steps = 365
-forecast = model_fit.forecast(steps=forecast_steps)
-
-# 예측 결과 시각화
-plt.figure(figsize=(10, 6))
-plt.plot(data_close, label='Historical Data')
-plt.plot(pd.date_range(start=data_close.index[-1], periods=forecast_steps+1, freq='D')[1:], forecast, color='red', label='Forecast')
-plt.title('ARMA Bitcoin Price Forecast')
-plt.xlabel('Date')
-plt.ylabel('Price (KRW)')
-plt.legend()
-plt.show()
-
-# 예측 결과 출력
-print(forecast)
+# 3단계: 가격 예측하기
